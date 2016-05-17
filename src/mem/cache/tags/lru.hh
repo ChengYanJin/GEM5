@@ -69,11 +69,22 @@ class LRU : public BaseSetAssoc
      */
     ~LRU() {}
 
-    CacheBlk* accessBlock(Addr addr, bool is_secure, Cycles &lat,
-                         int context_src);
+    CacheBlk* accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id);
     CacheBlk* findVictim(Addr addr);
     void insertBlock(PacketPtr pkt, BlkType *blk);
     void invalidate(CacheBlk *blk);
+    int getNumMisses(int numWays);
+    int getMaxMuWays(int core_id);
+
+  /**
+   * Register the stats for this object.
+   * @param name The name to prepend to the stats name.
+   */
+    void regStats() override;
+
+  //  Stats::Vector numMissesCounter;//TODO
+    Stats::Scalar block_req;//TODO
+    Stats::Scalar highest_utilisation;//TODO
 };
 
 #endif // __MEM_CACHE_TAGS_LRU_HH__

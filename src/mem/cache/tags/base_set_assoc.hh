@@ -111,6 +111,9 @@ class BaseSetAssoc : public BaseTags
     /** Mask out all bits that aren't part of the block offset. */
     unsigned blkMask;
 
+    /** Calculate the Misses. */
+    int *numMissesCounter;//TODO
+
 public:
 
     /** Convenience typedef. */
@@ -202,7 +205,7 @@ public:
      * @param lat The access latency.
      * @return Pointer to the cache block if found.
      */
-    CacheBlk* accessBlock(Addr addr, bool is_secure, Cycles &lat,
+    CacheBlk* accessBlock(ThreadID threadId,Addr addr, bool is_secure, Cycles &lat,
                           int context_src) override
     {
         Addr tag = extractTag(addr);

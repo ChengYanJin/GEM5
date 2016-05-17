@@ -257,6 +257,9 @@ class Request
         VALID_PC             = 0x00000010,
         /** Whether or not the context ID is valid. */
         VALID_CONTEXT_ID     = 0x00000020,
+        
+        VALID_THREAD_ID      = 0x00000040,////////////////////////
+        
         /** Whether or not the sc result is valid. */
         VALID_EXTRA_DATA     = 0x00000080,
         /**
@@ -340,6 +343,9 @@ class Request
 
     /** The context ID (for statistics, locks, and wakeups). */
     ContextID _contextId;
+
+    /** The thread ID (id within this CPU) */
+    ThreadID _threadId;
 
     /** program counter of initiating access; for tracing/debugging */
     Addr _pc;
@@ -695,6 +701,20 @@ class Request
     {
         assert(privateFlags.isSet(VALID_CONTEXT_ID));
         return _contextId;
+    }
+
+    bool
+    hasThreadId() const
+    {
+        return privateFlags.isSet(VALID_THREAD_ID);
+    }
+
+    /** Accessor function for thread ID. */
+    ThreadID
+    threadId() const
+    {
+        assert(privateFlags.isSet(VALID_THREAD_ID));
+        return _threadId;
     }
 
     void

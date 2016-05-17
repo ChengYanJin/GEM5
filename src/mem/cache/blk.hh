@@ -123,6 +123,11 @@ class CacheBlk
 
     Tick tickInserted;
 
+    /** the following three fields are used by the RECAP cache partitioning policy. */
+    std::vector<bool> apr_per_core;         // the per core fields of the access permission register (APR)
+    bool apr_flush;         // the flush field of the access permission register (APR)
+    bool apr_shared;        // the shared field of the access permission register (APR)
+
   protected:
     /**
      * Represents that the indicated thread context has a "lock" on

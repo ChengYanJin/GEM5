@@ -46,9 +46,9 @@ RandomRepl::RandomRepl(const Params *p)
 }
 
 CacheBlk*
-RandomRepl::accessBlock(Addr addr, bool is_secure, Cycles &lat, int master_id)
+RandomRepl::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id)
 {
-    return BaseSetAssoc::accessBlock(addr, is_secure, lat, master_id);
+    return BaseSetAssoc::accessBlock(threadId, addr, is_secure, lat, master_id);
 }
 
 CacheBlk*
