@@ -75,3 +75,8 @@ class FALRU(BaseTags):
     type = 'FALRU'
     cxx_class = 'FALRU'
     cxx_header = "mem/cache/tags/fa_lru.hh"
+
+class Recap(BaseSetAssoc):
+    type = 'Recap'
+    cxx_class = 'Recap'
+    cxx_header = "mem/cache/tags/recap.hh"

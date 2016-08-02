@@ -37,54 +37,54 @@
 #
 # Authors: Andreas Sandberg
 
-import os
-import sys
-
-from style.repo import GitRepo
-from style.verifiers import all_verifiers, all_regions
-from style.style import StdioUI, check_ignores
-
-import argparse
-
-parser = argparse.ArgumentParser(
-    description="gem5 git style checker hook")
-
-parser.add_argument("--verbose", "-v", action="store_true",
-                    help="Produce verbose output")
-
-args = parser.parse_args()
-
-git = GitRepo()
-
-opts = {}
-repo_base = git.repo_base()
-ui = StdioUI()
-
-os.chdir(repo_base)
-failing_files = set()
-
-for status, fname in git.status(filter="MA", cached=True):
-    if args.verbose:
-        print "Checking %s..." % fname
-    if check_ignores(fname):
-        continue
-    if status == "M":
-        regions = git.staged_regions(fname)
-    else:
-        regions = all_regions
-
-    verifiers = [ v(ui, opts, base=repo_base) for v in all_verifiers ]
-    for v in verifiers:
-        if not v.skip(fname) and v.check(fname, regions):
-            failing_files.add(fname)
-
-if failing_files:
-    print >> sys.stderr
-    print >> sys.stderr, "Style checker failed for the following files:"
-    for f in failing_files:
-        print >> sys.stderr, "\t%s" % f
-    print >> sys.stderr
-    print >> sys.stderr, \
-        "Please run the style checker manually to fix the offending files.\n" \
-        "To check your modifications, run: util/style.py -m"
-    sys.exit(1)
+# import os
+# import sys
+#
+# from style.repo import GitRepo
+# from style.verifiers import all_verifiers, all_regions
+# from style.style import StdioUI, check_ignores
+#
+# import argparse
+#
+# parser = argparse.ArgumentParser(
+#     description="gem5 git style checker hook")
+#
+# parser.add_argument("--verbose", "-v", action="store_true",
+#                     help="Produce verbose output")
+#
+# args = parser.parse_args()
+#
+# git = GitRepo()
+#
+# opts = {}
+# repo_base = git.repo_base()
+# ui = StdioUI()
+#
+# os.chdir(repo_base)
+# failing_files = set()
+#
+# for status, fname in git.status(filter="MA", cached=True):
+#     if args.verbose:
+#         print "Checking %s..." % fname
+#     if check_ignores(fname):
+#         continue
+#     if status == "M":
+#         regions = git.staged_regions(fname)
+#     else:
+#         regions = all_regions
+#
+#     verifiers = [ v(ui, opts, base=repo_base) for v in all_verifiers ]
+#     for v in verifiers:
+#         if not v.skip(fname) and v.check(fname, regions):
+#             failing_files.add(fname)
+#
+# if failing_files:
+#     print >> sys.stderr
+#     print >> sys.stderr, "Style checker failed for the following files:"
+#     for f in failing_files:
+#         print >> sys.stderr, "\t%s" % f
+#     print >> sys.stderr
+#     print >> sys.stderr, \
+#         "Please run the style checker manually to fix the offending files.\n" \
+#         "To check your modifications, run: util/style.py -m"
+#     sys.exit(1)

@@ -42,79 +42,50 @@
 
 /**
  * @file
- * Definitions of a LRU tag store.
+ * Declaration of a Recap tag store.
+ * The Recap tags guarantee that the true least-recently-used way in
+ * a set will always be evicted.
  */
 
-#include "mem/cache/tags/lru.hh"
+#ifndef __MEM_CACHE_TAGS_Recap_HH__
+#define __MEM_CACHE_TAGS_Recap_HH__
 
-#include "debug/CacheRepl.hh"
-#include "mem/cache/base.hh"
+#include "mem/cache/tags/base_set_assoc.hh"
+#include "params/Recap.hh"
 
-LRU::LRU(const Params *p)
-    : BaseSetAssoc(p)
+class Recap : public BaseSetAssoc
 {
-}
+  public:
+    /** Convenience typedef. */
+    typedef RecapParams Params;
 
-CacheBlk*
-LRU::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id)
-{
-    CacheBlk *blk = BaseSetAssoc::accessBlock(threadId, addr, is_secure, lat, master_id);
+    /**
+     * Construct and initialize this tag store.
+     */
+    Recap(const Params *p);
 
-    if (blk != nullptr) {
-        // move this block to head of the MRU list
-        sets[blk->set].moveToHead(blk);
-        DPRINTF(CacheRepl, "set %x: moving blk %x (%s) to MRU\n",
-                blk->set, regenerateBlkAddr(blk->tag, blk->set),
-                is_secure ? "s" : "ns");
-    }
+    /**
+     * Destructor
+     */
+    ~Recap() {}
 
-    return blk;
-}
+    CacheBlk* accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id);
+    CacheBlk* findVictim(Addr addr);
+    void insertBlock(PacketPtr pkt, BlkType *blk);
+    void invalidate(CacheBlk *blk);
+    int getNumMisses(int num_ways);
+    int getMaxMuWays(int core_id);
 
-CacheBlk*
-LRU::findVictim(Addr addr)
-{
-    int set = extractSet(addr);
-    // grab a replacement candidate
-    BlkType *blk = nullptr;
-    for (int i = assoc - 1; i >= 0; i--) {
-        BlkType *b = sets[set].blks[i];
-        if (b->way < allocAssoc) {
-            blk = b;
-            break;
-        }
-    }
-    assert(!blk || blk->way < allocAssoc);
+  /**
+   * Register the stats for this object.
+   * @param name The name to prepend to the stats name.
+   */
+    void regStats() override;
+/** Calculate the Misses. */
+    int numMissesCounter[35]={0};
+    Stats::Vector missCounter;
+    Stats::Scalar block_req;
+//    Stats::Scalar numMisses;
+};
 
-    if (blk && blk->isValid()) {
-        DPRINTF(CacheRepl, "set %x: selecting blk %x for replacement\n",
-                set, regenerateBlkAddr(blk->tag, set));
-    }
-
-    return blk;
-}
-
-void
-LRU::insertBlock(PacketPtr pkt, BlkType *blk)
-{
-    BaseSetAssoc::insertBlock(pkt, blk);
-
-    int set = extractSet(pkt->getAddr());
-    sets[set].moveToHead(blk);
-}
-
-void
-LRU::invalidate(CacheBlk *blk)
-{
-    BaseSetAssoc::invalidate(blk);
-
-    // should be evicted before valid blocks
-    int set = blk->set;
-    sets[set].moveToTail(blk);
-}
-
-LRU*
-LRUParams::create()
-{
-    return new LRU(this);
-}
+#endif // __MEM_CACHE_TAGS_Recap_HH__

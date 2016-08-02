@@ -42,37 +42,74 @@
 
 /**
  * @file
- * Definitions of a LRU tag store.
+ * Definitions of a Recap tag store.
  */
 
-#include "mem/cache/tags/lru.hh"
-
 #include "debug/CacheRepl.hh"
+#include "mem/cache/tags/recap.hh"
 #include "mem/cache/base.hh"
 
-LRU::LRU(const Params *p)
+Recap::Recap(const Params *p)
     : BaseSetAssoc(p)
 {
 }
 
+void
+Recap::regStats()
+{
+    using namespace Stats;
+    BaseTags::regStats();
+
+    block_req
+        .name(name() + ".block_req")
+        .desc("The number of ways for each core to achieve it's highest utilisation.")
+        .flags(total | nozero | nonan)
+        ;
+
+    missCounter
+        .init(assoc)
+        .name(name() + ".missCounter")
+        .desc("Calculate the sum of the misses.")
+        ;
+}
+
 CacheBlk*
-LRU::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id)
+Recap::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id)
 {
     CacheBlk *blk = BaseSetAssoc::accessBlock(threadId, addr, is_secure, lat, master_id);
 
-    if (blk != nullptr) {
+    if (blk != nullptr) {//Hit
         // move this block to head of the MRU list
+       for(int sd = 0; sd < assoc; sd++){//sd:stack distance
+
+           if (sets[blk->set].blks[sd] == blk){
+
+                if (blk->way < allocAssoc){//Hit
+
+                   numMissesCounter[sd]++;
+                }
+           }
+       }
         sets[blk->set].moveToHead(blk);
         DPRINTF(CacheRepl, "set %x: moving blk %x (%s) to MRU\n",
                 blk->set, regenerateBlkAddr(blk->tag, blk->set),
                 is_secure ? "s" : "ns");
     }
+    else {//Miss
+        numMissesCounter[assoc]++;
+    }
 
+    block_req = getMaxMuWays(threadId);
+
+    for (int a = 0; a < assoc; a++){
+
+        missCounter[a] = getNumMisses(a);
+     }
     return blk;
 }
 
 CacheBlk*
-LRU::findVictim(Addr addr)
+Recap::findVictim(Addr addr)
 {
     int set = extractSet(addr);
     // grab a replacement candidate
@@ -95,7 +132,7 @@ LRU::findVictim(Addr addr)
 }
 
 void
-LRU::insertBlock(PacketPtr pkt, BlkType *blk)
+Recap::insertBlock(PacketPtr pkt, BlkType *blk)
 {
     BaseSetAssoc::insertBlock(pkt, blk);
 
@@ -104,7 +141,7 @@ LRU::insertBlock(PacketPtr pkt, BlkType *blk)
 }
 
 void
-LRU::invalidate(CacheBlk *blk)
+Recap::invalidate(CacheBlk *blk)
 {
     BaseSetAssoc::invalidate(blk);
 
@@ -113,8 +150,48 @@ LRU::invalidate(CacheBlk *blk)
     sets[set].moveToTail(blk);
 }
 
-LRU*
-LRUParams::create()
+Recap*
+RecapParams::create()
 {
-    return new LRU(this);
+    return new Recap(this);
+}
+
+/**
+* Calculate the number of misses according to the different associativity.
+* @param numWays:the associativity (must no more than l2cache associativity)
+* @return        the number of misses in this associativity
+*/
+int
+Recap::getNumMisses(int num_ways){
+
+    int numMisses = numMissesCounter[assoc];//Miss
+
+	for (int i = num_ways; i < assoc; i++){//Hit
+		numMisses = numMissesCounter[i] + numMisses;
+	}
+
+	return numMisses;
+}
+
+/**
+ * Find the minimum blocks to get highest utilisation(max_mu).
+ * @param core_id: the number of the core
+ * @return         the minimum blocks
+ */
+int
+Recap::getMaxMuWays(int core_id){
+	double max_mu = 0;
+	int max_mu_ways = 1;
+
+	for (int j = 1; j <= assoc; j++){
+
+		double utility = getNumMisses(0) - getNumMisses(j);
+		double mu = utility / j;
+
+		if (mu > max_mu){
+			max_mu = mu;
+			max_mu_ways = j;
+		}
+	}
+	return max_mu_ways;
 }
