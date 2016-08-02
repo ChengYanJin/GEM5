@@ -79,4 +79,4 @@ class FALRU(BaseTags):
 class Recap(BaseSetAssoc):
     type = 'Recap'
     cxx_class = 'Recap'
-    cxx_header = "mem/cache/tags/recap.hh"
+    cxx_header = "mem/cache/tags/recap/recap.hh"

@@ -46,7 +46,7 @@
  */
 
 #include "debug/CacheRepl.hh"
-#include "mem/cache/tags/recap.hh"
+#include "mem/cache/tags/recap/recap.hh"
 #include "mem/cache/base.hh"
 
 Recap::Recap(const Params *p)

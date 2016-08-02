@@ -47,8 +47,8 @@
  * a set will always be evicted.
  */
 
-#ifndef __MEM_CACHE_TAGS_Recap_HH__
-#define __MEM_CACHE_TAGS_Recap_HH__
+#ifndef __MEM_CACHE_TAGS_RECAP_HH__
+#define __MEM_CACHE_TAGS_RECAP_HH__
 
 #include "mem/cache/tags/base_set_assoc.hh"
 #include "params/Recap.hh"
@@ -88,4 +88,4 @@ class Recap : public BaseSetAssoc
 //    Stats::Scalar numMisses;
 };
 
-#endif // __MEM_CACHE_TAGS_Recap_HH__
+#endif // __MEM_CACHE_TAGS_RECAP_HH__
