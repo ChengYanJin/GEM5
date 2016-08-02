@@ -78,7 +78,7 @@ LRU::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int 
 {
     CacheBlk *blk = BaseSetAssoc::accessBlock(threadId, addr, is_secure, lat, master_id);
 
-    if (blk != NULL) {//Hit
+    if (blk != nullptr) {//Hit
         // move this block to head of the MRU list
        for(int sd = 0; sd < assoc; sd++){//sd:stack distance
 
@@ -113,7 +113,7 @@ LRU::findVictim(Addr addr)
 {
     int set = extractSet(addr);
     // grab a replacement candidate
-    BlkType *blk = NULL;
+    BlkType *blk = nullptr;
     for (int i = assoc - 1; i >= 0; i--) {
         BlkType *b = sets[set].blks[i];
         if (b->way < allocAssoc) {
