@@ -73,7 +73,7 @@ class LRU : public BaseSetAssoc
     CacheBlk* findVictim(Addr addr);
     void insertBlock(PacketPtr pkt, BlkType *blk);
     void invalidate(CacheBlk *blk);
-    int getNumMisses(int numWays);
+    int getNumMisses(int num_ways);
     int getMaxMuWays(int core_id);
 
   /**
@@ -81,10 +81,11 @@ class LRU : public BaseSetAssoc
    * @param name The name to prepend to the stats name.
    */
     void regStats() override;
-
-  //  Stats::Vector numMissesCounter;//TODO
-    Stats::Scalar block_req;//TODO
-    Stats::Scalar highest_utilisation;//TODO
+/** Calculate the Misses. */
+    int numMissesCounter[35]={0};
+    Stats::Vector missCounter;
+    Stats::Scalar block_req;
+//    Stats::Scalar numMisses;
 };
 
 #endif // __MEM_CACHE_TAGS_LRU_HH__

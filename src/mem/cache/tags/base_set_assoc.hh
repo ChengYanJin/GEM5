@@ -111,8 +111,8 @@ class BaseSetAssoc : public BaseTags
     /** Mask out all bits that aren't part of the block offset. */
     unsigned blkMask;
 
-    /** Calculate the Misses. */
-    int *numMissesCounter;//TODO
+    /** Calculate the Misses.
+   int numMissesCounter[16];//TODO*/
 
 public:
 

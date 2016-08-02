@@ -81,7 +81,7 @@ BaseSetAssoc::BaseSetAssoc(const Params *p)
     blks = new BlkType[numSets * assoc];
     // allocate data storage in one big chunk
 
-    numMissesCounter = new int [assoc + 2];//TODO
+ //   int numMissesCounter[assoc +1 ];//TODO
 
     numBlocks = numSets * assoc;
     dataBlks = new uint8_t[numBlocks * blkSize];
@@ -123,7 +123,7 @@ BaseSetAssoc::~BaseSetAssoc()
     delete [] blks;
     delete [] sets;
 
-    delete [] numMissesCounter;//TODO
+//   delete [] numMissesCounter;//TODO
 }
 
 CacheBlk*
