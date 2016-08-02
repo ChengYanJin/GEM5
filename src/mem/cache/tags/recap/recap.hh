@@ -53,6 +53,8 @@
 #include "mem/cache/tags/base_set_assoc.hh"
 #include "params/Recap.hh"
 
+//TODO: Add CacheUsageMonitor, CachePartitioningControl, CacheReconfiguration classes.
+
 class Recap : public BaseSetAssoc
 {
   public:
@@ -82,10 +84,7 @@ class Recap : public BaseSetAssoc
    */
     void regStats() override;
 /** Calculate the Misses. */
-    int numMissesCounter[35]={0};
-    Stats::Vector missCounter;
-    Stats::Scalar block_req;
-//    Stats::Scalar numMisses;
+    int numMissesCounter[35]={0};//TODO: 2D, 35?
 };
 
 #endif // __MEM_CACHE_TAGS_RECAP_HH__

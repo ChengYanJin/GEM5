@@ -74,11 +74,16 @@ Recap::regStats()
 }
 
 CacheBlk*
-Recap::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int master_id)
+Recap::accessBlock(ThreadID threadId, /* TODO: BOOL readOrWrite */ Addr addr, bool is_secure, Cycles &lat, int master_id)
 {
+    //TODO: class CachePartitioningControl:
+    //TODO:  if flush_bit then core.canRead
+    //TODO:  else if core_bit then core.canReadOrWrite
+    //TODO:  else core.cannotAccessAtAll
     CacheBlk *blk = BaseSetAssoc::accessBlock(threadId, addr, is_secure, lat, master_id);
 
     if (blk != nullptr) {//Hit
+        //TODO : onCacheHit()
         // move this block to head of the MRU list
        for(int sd = 0; sd < assoc; sd++){//sd:stack distance
 
@@ -96,15 +101,15 @@ Recap::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, in
                 is_secure ? "s" : "ns");
     }
     else {//Miss
+        //TODO: onCacheMiss()
         numMissesCounter[assoc]++;
     }
 
-    block_req = getMaxMuWays(threadId);
+    //TODO: newInterval()
+    //TODO: calculate getMaxMuWays(threadId) for each thread ID.
+    //TODO: turn off cache ways where the APR is totally clear (i.e., all core, shared and flush bits are false)
+    //block_req = getMaxMuWays(threadId);
 
-    for (int a = 0; a < assoc; a++){
-
-        missCounter[a] = getNumMisses(a);
-     }
     return blk;
 }
 
@@ -179,7 +184,7 @@ Recap::getNumMisses(int num_ways){
  * @return         the minimum blocks
  */
 int
-Recap::getMaxMuWays(int core_id){
+Recap::getMaxMuWays(int core_id){//TODO
 	double max_mu = 0;
 	int max_mu_ways = 1;
 
