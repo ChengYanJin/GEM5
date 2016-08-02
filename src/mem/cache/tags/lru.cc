@@ -66,19 +66,11 @@ LRU::regStats()
         .flags(total | nozero | nonan)
         ;
 
-   highest_utilisation
-        .name(name() + ".highest_utilisation")
-        .desc("Change in misses for core when moving from 0 to j ways.")
-        .flags(total | nozero | nonan)
-        ;
-/*
-    numMissesCounter
-        .init(8)
-        .name(name() + ".numMissesCounter")
+    missCounter
+        .init(assoc)
+        .name(name() + ".missCounter")
         .desc("Calculate the sum of the misses.")
-        .flags(total | nozero | nonan)
         ;
-*/
 }
 
 CacheBlk*
@@ -88,7 +80,7 @@ LRU::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int 
 
     if (blk != NULL) {//Hit
         // move this block to head of the MRU list
-        for(int sd = 0; sd < assoc ; sd++){//sd:stack distance
+       for(int sd = 0; sd < assoc; sd++){//sd:stack distance
 
            if (sets[blk->set].blks[sd] == blk){
 
@@ -109,6 +101,10 @@ LRU::accessBlock(ThreadID threadId, Addr addr, bool is_secure, Cycles &lat, int 
 
     block_req = getMaxMuWays(threadId);
 
+    for (int a = 0; a < assoc; a++){
+
+        missCounter[a] = getNumMisses(a);
+     }
     return blk;
 }
 
@@ -166,12 +162,12 @@ LRUParams::create()
 * @return        the number of misses in this associativity
 */
 int
-LRU::getNumMisses(int numWays){
+LRU::getNumMisses(int num_ways){
 
     int numMisses = numMissesCounter[assoc];//Miss
 
-	for (int i = numWays ; i < assoc; i++){
-		numMisses += numMissesCounter[i];
+	for (int i = num_ways; i < assoc; i++){//Hit
+		numMisses = numMissesCounter[i] + numMisses;
 	}
 
 	return numMisses;
@@ -187,19 +183,15 @@ LRU::getMaxMuWays(int core_id){
 	double max_mu = 0;
 	int max_mu_ways = 1;
 
-
 	for (int j = 1; j <= assoc; j++){
 
 		double utility = getNumMisses(0) - getNumMisses(j);
 		double mu = utility / j;
-
-	//	cout << "utility[" << j << "]: " << utility << ", mu[" << j << "]: " << mu << endl;
 
 		if (mu > max_mu){
 			max_mu = mu;
 			max_mu_ways = j;
 		}
 	}
-	highest_utilisation = max_mu;
 	return max_mu_ways;
 }
